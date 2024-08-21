@@ -1,61 +1,109 @@
 using System;
 
-public class My_program_AirLine
+public class AirlineReservationSystem
 {
+    private const int PlaneCapacity = 10;
+    private bool[] seats = new bool[PlaneCapacity];
+    private int reservedSeatsCount = 0;
+    private int totalIncome = 0;
+
     public static void Main(string[] args)
     {
-        int capabilityOfPlane = 10;
-        bool[] seats = new bool[capabilityOfPlane];
-        int Rs_Nm = 0, To_In = 0;
-        int S_Nm, Bg_Wg, Ex_We, To_Fee;
+        AirlineReservationSystem reservationSystem = new AirlineReservationSystem();
+        reservationSystem.Run();
+    }
+
+    public void Run()
+    {
+        int seatNumber;
 
         do
         {
-            Console.Write("Enter seat Number (-1 to end): ");
-            S_Nm = Convert.ToInt32(Console.ReadLine());
+            Console.Write("Enter seat number (1-10) to reserve (-1 to end): ");
+            seatNumber = GetSeatNumber();
 
-            switch (S_Nm)
+            if (seatNumber == -1)
             {
-                case -1:
-                    {
-                        Console.WriteLine($"The flight has {Rs_Nm} reserved seats with total income {To_In} $");
-                        break;
-                    }
-                case int x when x < 1 || x > 10:
-                    {
-                        Console.WriteLine("Invalid seat number");
-                        break;
-                    }
-                case int x when (seats[x - 1]):
-                    {
-                        Console.WriteLine("Reservation cancelled due to unavailable seat number");
-                        break;
-                    }
-                default:
-                    {
-                        Console.Write("Enter the weight of the bag: ");
-                        Bg_Wg = Convert.ToInt32(Console.ReadLine());
-
-                        if (Bg_Wg > 20)
-                        {
-                            Console.WriteLine("Reservation cancelled due to unallowed baggage weight");
-                            break;
-                        }
-
-                        Ex_We = (Bg_Wg - 10) * 5;
-                        To_Fee = 500 + Ex_We;
-
-                        seats[S_Nm - 1] = true;
-                        Rs_Nm = Rs_Nm + 1;
-                        To_In = To_In + To_Fee;
-
-                        Console.WriteLine($"Reservation is confirmed for seat no. {S_Nm}");
-                        Console.WriteLine($"Fees of extra weight: {Ex_We} $");
-                        Console.WriteLine($"Total fees: {To_Fee} $");
-
-                        break;
-                    }
+                DisplaySummary();
+                break;
             }
-        } while (S_Nm != -1);
+
+            if (IsValidSeat(seatNumber))
+            {
+                ReserveSeat(seatNumber);
+            }
+        } while (true);
+    }
+
+    private int GetSeatNumber()
+    {
+        int seatNumber;
+        while (!int.TryParse(Console.ReadLine(), out seatNumber))
+        {
+            Console.WriteLine("Invalid input. Please enter a valid seat number.");
+            Console.Write("Enter seat number (1-10) to reserve (-1 to end): ");
+        }
+        return seatNumber;
+    }
+
+    private bool IsValidSeat(int seatNumber)
+    {
+        if (seatNumber < 1 || seatNumber > PlaneCapacity)
+        {
+            Console.WriteLine("Invalid seat number. Please enter a number between 1 and 10.");
+            return false;
+        }
+
+        if (seats[seatNumber - 1])
+        {
+            Console.WriteLine("Reservation cancelled: Seat number already reserved.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private void ReserveSeat(int seatNumber)
+    {
+        Console.Write("Enter the weight of the bag (in kg): ");
+        int bagWeight = GetBagWeight();
+
+        if (bagWeight > 20)
+        {
+            Console.WriteLine("Reservation cancelled: Excess baggage weight is not allowed.");
+            return;
+        }
+
+        int excessWeightFee = CalculateExcessWeightFee(bagWeight);
+        int totalFee = 500 + excessWeightFee;
+
+        seats[seatNumber - 1] = true;
+        reservedSeatsCount++;
+        totalIncome += totalFee;
+
+        Console.WriteLine($"Reservation confirmed for seat number {seatNumber}.");
+        Console.WriteLine($"Extra weight fee: {excessWeightFee} $");
+        Console.WriteLine($"Total fees: {totalFee} $");
+    }
+
+    private int GetBagWeight()
+    {
+        int bagWeight;
+        while (!int.TryParse(Console.ReadLine(), out bagWeight) || bagWeight < 0)
+        {
+            Console.WriteLine("Invalid input. Please enter a valid bag weight (non-negative).");
+            Console.Write("Enter the weight of the bag (in kg): ");
+        }
+        return bagWeight;
+    }
+
+    private int CalculateExcessWeightFee(int bagWeight)
+    {
+        return (bagWeight > 10) ? (bagWeight - 10) * 5 : 0;
+    }
+
+    private void DisplaySummary()
+    {
+        Console.WriteLine($"The flight has {reservedSeatsCount} reserved seats with a total income of {totalIncome} $.");
     }
 }
